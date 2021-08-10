@@ -7,21 +7,19 @@ trigger:
 - master
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: ubuntu-20.04
 
 steps:
 
 - task: Maven@3
   inputs:
     mavenPomFile: 'pom.xml'
-    options: '-PbuildDocker'
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    codeCoverageToolOption: 'JaCoCo'
     javaHomeOption: 'JDKVersion'
     mavenVersionOption: 'Default'
     mavenAuthenticateFeed: false
     effectivePomSkip: false
     sonarQubeRunAnalysis: true
-    goals: 'install'
+    goals: 'clean install -q -PbuildDocker'
 
