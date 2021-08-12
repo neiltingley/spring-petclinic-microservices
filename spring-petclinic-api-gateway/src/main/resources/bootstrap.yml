@@ -1,5 +1,7 @@
 spring:
   cloud:
+    activate:
+      on-profile: dev
     config:
       uri: http://localhost:8888
   application:
@@ -11,4 +13,4 @@ spring:
       on-profile: docker
   cloud:
     config:
-      uri: http://config-server:8888
+      uri: http://config-server:8080
