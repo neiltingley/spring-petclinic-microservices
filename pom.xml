@@ -23,7 +23,7 @@
         <module>spring-petclinic-visits-service</module>
         <module>spring-petclinic-discovery-server</module>
         <module>spring-petclinic-api-gateway</module>
-        <module>spring-petclinic-microservices-config</module>
+
     </modules>
 
     <properties>
@@ -86,32 +86,12 @@
 
                 </plugin>
 
-                <plugin>
-                    <groupId>pl.project13.maven</groupId>
-                    <artifactId>git-commit-id-plugin</artifactId>
-                    <version>4.0.0</version>
-                    <executions>
-                        <execution>
-                            <id>get-the-git-infos</id>
-                            <phase>initialize</phase>
-                            <goals>
-                                <goal>revision</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <generateGitPropertiesFile>false</generateGitPropertiesFile>
-                        <dateFormat>yyyy-MM-dd'T'HH:mm:ss'Z'</dateFormat>
-                        <dateFormatTimeZone>GMT</dateFormatTimeZone>
-                        <includeOnlyProperties>
-                            <includeOnlyProperty>^git.commit.time$</includeOnlyProperty>
-                        </includeOnlyProperties>
-                    </configuration>
-                </plugin>
+
                 <!-- Spring Boot Actuator displays build-related information if a META-INF/build-info.properties file is present -->
                 <plugin>
                     <groupId>pl.project13.maven</groupId>
                     <artifactId>git-commit-id-plugin</artifactId>
+                    <version>4.9.10</version>
                     <executions>
                         <execution>
                             <goals>
