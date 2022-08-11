@@ -63,108 +63,91 @@
         </dependencies>
     </dependencyManagement>
 
-    <profiles>
-        <profile>
-            <id>springboot</id>
-            <activation>
-                <file>
-                    <!-- Just a way to identify a Spring Boot application -->
-                    <exists>src/main/resources/bootstrap.yml</exists>
-                </file>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-maven-plugin</artifactId>
-                        <configuration>
-                            <fork>true</fork>
-                            <!-- Layered jars optimizes Docker images -->
-                            <layers>
-                                <enabled>true</enabled>
-                            </layers>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <!-- Spring Boot Actuator displays build-related information if a META-INF/build-info.properties file is present -->
-                                <goals>
-                                    <goal>build-info</goal>
-                                </goals>
-                                <configuration>
-                                    <additionalProperties>
-                                        <encoding.source>${project.build.sourceEncoding}</encoding.source>
-                                        <encoding.reporting>${project.reporting.outputEncoding}</encoding.reporting>
-                                        <java.source>${maven.compiler.source}</java.source>
-                                        <java.target>${maven.compiler.target}</java.target>
-                                    </additionalProperties>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
+    <build>
+        <pluginManagement>
+            <plugins>
 
-                    <!-- Spring Boot Actuator displays build-related information if a META-INF/build-info.properties file is present -->
-                    <plugin>
-                        <groupId>pl.project13.maven</groupId>
-                        <artifactId>git-commit-id-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>revision</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <verbose>true</verbose>
-                            <dateFormat>yyyy-MM-dd'T'HH:mm:ssZ</dateFormat>
-                            <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                            <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-                            <failOnNoGitDirectory>false</failOnNoGitDirectory>
-                            <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
 
-        <profile>
-            <id>buildDocker</id>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>com.spotify</groupId>
-                            <artifactId>docker-maven-plugin</artifactId>
-                            <version>${docker.plugin.version}</version>
-                            <executions>
-                                <execution>
-                                    <phase>install</phase>
-                                    <goals>
-                                        <goal>build</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
+
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <to>
+                        <image>docker.io/my-docker-id/${project.artifactId}</image>
+                    </to>
+
+                    <auth>  <auth>
+                        <username>${env.REGISTRY_USERNAME}</username>
+                        <password>${env.REGISTRY_PASSWORD}</password>
+
+
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>2.7.2</version>
+                    <configuration>
+                        <fork>true</fork>
+                        <!-- Layered jars optimizes Docker images -->
+                        <layers>
+                            <enabled>true</enabled>
+                        </layers>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <!-- Spring Boot Actuator displays build-related information if a META-INF/build-info.properties file is present -->
+                            <goals>
+                                <goal>build-info</goal>
+                            </goals>
                             <configuration>
-                                <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
-                                <dockerDirectory>${docker.image.dockerfile.dir}</dockerDirectory>
-                                <serverId>docker-hub</serverId>
-                                <registryUrl>https://index.docker.io/v1/</registryUrl>
-                                <resources>
-                                    <resource>
-                                        <targetPath>/</targetPath>
-                                        <directory>${project.build.directory}</directory>
-                                        <include>${project.build.finalName}.jar</include>
-                                    </resource>
-                                </resources>
-                                <buildArgs>
-                                    <ARTIFACT_NAME>${project.build.finalName}</ARTIFACT_NAME>
-                                    <EXPOSED_PORT>${docker.image.exposed.port}</EXPOSED_PORT>
-                                    <DOCKERIZE_VERSION>${docker.image.dockerize.version}</DOCKERIZE_VERSION>
-                                </buildArgs>
+                                <additionalProperties>
+                                    <encoding.source>${project.build.sourceEncoding}</encoding.source>
+                                    <encoding.reporting>${project.reporting.outputEncoding}</encoding.reporting>
+                                    <java.source>${maven.compiler.source}</java.source>
+                                    <java.target>${maven.compiler.target}</java.target>
+                                </additionalProperties>
                             </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
-        </profile>
-    </profiles>
+                        </execution>
+                    </executions>
+                </plugin>
+
+            </plugins>
+
+        </pluginManagement>
+        <plugins>
+
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-file</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <sourceFile>../docker/Dockerfile</sourceFile>
+                            <destinationFile>Dockerfile</destinationFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
 </project>
