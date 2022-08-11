@@ -57,7 +57,6 @@ spec:
         image: neiltingley/spring-petclinic-config-server
         ports:
           - containerPort: 8080
-
 ---
 apiVersion: apps/v1
 kind: Deployment

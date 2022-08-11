@@ -24,7 +24,4 @@ build:
     jib:
      project: spring-petclinic-visits-service
 
-profiles:
-  - name: gcb
-    build:
-      googleCloudBuild: {}
+
