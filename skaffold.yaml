@@ -1,0 +1,27 @@
+apiVersion: skaffold/v2beta20
+kind: Config
+build:
+  artifacts:
+  - image: spring-petclinic-admin-server
+    jib:
+      project: spring-petclinic-admin-server
+  - image: spring-petclinic-api-gateway
+    jib:
+      project: spring-petclinic-api-gateway
+  - image: spring-petclinic-config-server
+    jib:
+      project: spring-petclinic-config-server
+  - image: spring-petclinic-customers-service
+    jib:
+      project: spring-petclinic-customers-service
+  - image: spring-petclinic-discovery-server
+    jib:
+      project: spring-petclinic-discovery-server
+  - image: spring-petclinic-vets-service
+    jib:
+      project: spring-petclinic-vets-service
+  - image: spring-petclinic-visits-service
+    jib:
+     project: spring-petclinic-visits-service
+
+
