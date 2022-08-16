@@ -9,11 +9,11 @@ phases:
       commands:
         - echo Logging in to Amazon ECR...
         - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 728277589254.dkr.ecr.eu-west-2.amazonaws.com
-  build:
-    commands:
-      - echo Build started on `date`
-      - mvn test -B -T4
-  post_build:
-    commands:
-      - echo Build completed on `date`
-      - mvn package -T4 -B
+#  build:
+#    commands:
+#      - echo Build started on `date`
+#      - mvn test -B
+#  post_build:
+#    commands:
+#      - echo Build completed on `date`
+#      - mvn package -B
