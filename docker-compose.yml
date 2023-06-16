@@ -14,7 +14,7 @@ services:
     mem_limit: 512M
     depends_on:
       - config-server
-    entrypoint: ["./dockerize","-wait=tcp://config-server:8888","-timeout=60s","--","java", "org.springframework.boot.loader.JarLauncher"]
+    entrypoint: ["./dockerize","-wait=tcp://http://config-server:8888","-timeout=60s","--","java", "org.springframework.boot.loader.JarLauncher"]
     ports:
      - 8761:8761
 
@@ -84,16 +84,16 @@ services:
 
   ## Grafana / Prometheus
 
-  grafana-server:
-    build: ./docker/grafana
-    container_name: grafana-server
-    mem_limit: 256M
-    ports:
-    - 3000:3000
-
-  prometheus-server:
-    build: ./docker/prometheus
-    container_name: prometheus-server
-    mem_limit: 256M
-    ports:
-    - 9091:9090
+#  grafana-server:
+#    build: ./docker/grafana
+#    container_name: grafana-server
+#    mem_limit: 256M
+#    ports:
+#    - 3000:3000
+#
+#  prometheus-server:
+#    build: ./docker/prometheus
+#    container_name: prometheus-server
+#    mem_limit: 256M
+#    ports:
+#    - 9091:9090
