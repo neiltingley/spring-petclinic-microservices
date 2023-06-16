@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: vets-service
+  name: vets-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: vets-service
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/spring-petclinic-microservices-default: "true"
+        io.kompose.service: vets-service
+    spec:
+      initContainers:
+        - name: init-myservice
+          image: busybox:1.28
+          command: ["/bin/sh", "-c","until nc config-server 8888 -w1 ; do sleep 2; done" ]
+      containers:
+        - image: neiltingley/spring-petclinic-vets-service:latest
+          name: vets-service
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: docker
+            - name: CONFIG_SERVER_URL
+              value: http://config-server:8888
+            - name: NODE_NAME
+              value: customers-service
+          ports:
+            - containerPort: 8083
+          resources:
+            requests:
+              memory: "250Mi"
+              cpu: "250m"
+            limits:
+              memory: "500Mi"
+              cpu: "500m"
+      restartPolicy: Always
+status: {}
