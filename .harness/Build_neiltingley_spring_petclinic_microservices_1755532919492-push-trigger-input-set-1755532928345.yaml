@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_neiltingley_spring_petclinic_microservices_1755532919492-push-trigger-input-set
+  identifier: Build_neiltingley_spring_petclinic_microservices_1755532919492pushtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: default_project
+  pipeline:
+    identifier: Build_neiltingley_spring_petclinic_microservices_1755532919492
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
