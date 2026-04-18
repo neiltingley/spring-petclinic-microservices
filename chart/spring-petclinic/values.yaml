@@ -1,0 +1,85 @@
+
+
+global:
+  namespaceOverride: "petclinic"
+
+services:
+  configServer:
+    enabled: true
+    image: springcommunity/spring-petclinic-config-server
+    port: 8888
+    memoryLimit: "512M"
+    healthcheck:
+      test: ["CMD", "curl", "-I", "http://config-server:8888"]
+      interval: "5s"
+      timeout: "5s"
+      retries: 10
+
+  discoveryServer:
+    enabled: true
+    image: springcommunity/spring-petclinic-discovery-server
+    port: 8761
+    memoryLimit: "512M"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://discovery-server:8761"]
+      interval: "5s"
+      timeout: "3s"
+      retries: 10
+
+  customersService:
+    enabled: true
+    image: springcommunity/spring-petclinic-customers-service
+    port: 8081
+    memoryLimit: "512M"
+
+  visitsService:
+    enabled: true
+    image: springcommunity/spring-petclinic-visits-service
+    port: 8082
+    memoryLimit: "512M"
+
+  vetsService:
+    enabled: true
+    image: springcommunity/spring-petclinic-vets-service
+    port: 8083
+    memoryLimit: "512M"
+
+  genaiService:
+    enabled: true
+    image: springcommunity/spring-petclinic-genai-service
+    port: 8084
+    memoryLimit: "512M"
+    env:
+      OPENAI_API_KEY: ""
+      AZURE_OPENAI_KEY: ""
+      AZURE_OPENAI_ENDPOINT: ""
+
+  apiGateway:
+    enabled: true
+    image: springcommunity/spring-petclinic-api-gateway
+    port: 8080
+    memoryLimit: "512M"
+
+  tracingServer:
+    enabled: true
+    image: openzipkin/zipkin
+    port: 9411
+    memoryLimit: "512M"
+
+  adminServer:
+    enabled: true
+    image: springcommunity/spring-petclinic-admin-server
+    port: 9090
+    memoryLimit: "512M"
+
+  grafanaServer:
+    enabled: true
+    image: grafana/grafana
+    port: 3030
+    memoryLimit: "256M"
+
+  prometheusServer:
+    enabled: true
+    image: prom/prometheus
+    port: 9091
+    memoryLimit: "256M"

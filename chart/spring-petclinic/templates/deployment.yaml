@@ -1,0 +1,46 @@
+{{- range $serviceName, $service := .Values.services }}
+{{- if $service.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $serviceName }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: {{ $serviceName }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $serviceName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $serviceName }}
+    spec:
+      containers:
+      - name: {{ $serviceName }}
+        image: {{ $service.image }}
+        ports:
+        - containerPort: {{ $service.port }}
+        resources:
+          limits:
+            memory: {{ $service.memoryLimit }}
+        {{- if $service.healthcheck }}
+        livenessProbe:
+          exec:
+            command: {{ $service.healthcheck.test }}
+          initialDelaySeconds: 15
+          periodSeconds: {{ $service.healthcheck.interval | default "10s" | trimSuffix "s" | int }}
+          timeoutSeconds: {{ $service.healthcheck.timeout | default "5s" | trimSuffix "s" | int }}
+          failureThreshold: {{ $service.healthcheck.retries | default 3 }}
+        {{- end }}
+        {{- if $service.env }}
+        env:
+        {{- range $key, $value := $service.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
+{{- end }}
+{{- end }}
