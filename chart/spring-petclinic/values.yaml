@@ -1,85 +1,119 @@
-
-
 global:
-  namespaceOverride: "petclinic"
+  imageRegistry: docker.io
+  imageNamespace: springcommunity
+  imageTag: latest
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets: []
+  podAnnotations: {}
+  env:
+    SPRING_PROFILES_ACTIVE: docker
+
+serviceDefaults:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 768Mi
+  probes:
+    enabled: true
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: petclinic.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  serviceName: api-gateway
+  servicePort: 8080
 
 services:
-  configServer:
+  config-server:
     enabled: true
-    image: springcommunity/spring-petclinic-config-server
+    repository: spring-petclinic-config-server
     port: 8888
-    memoryLimit: "512M"
-    healthcheck:
-      test: ["CMD", "curl", "-I", "http://config-server:8888"]
-      interval: "5s"
-      timeout: "5s"
-      retries: 10
+    service:
+      type: ClusterIP
 
-  discoveryServer:
+  discovery-server:
     enabled: true
-    image: springcommunity/spring-petclinic-discovery-server
+    repository: spring-petclinic-discovery-server
     port: 8761
-    memoryLimit: "512M"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://discovery-server:8761"]
-      interval: "5s"
-      timeout: "3s"
-      retries: 10
+    service:
+      type: ClusterIP
 
-  customersService:
+  customers-service:
     enabled: true
-    image: springcommunity/spring-petclinic-customers-service
+    repository: spring-petclinic-customers-service
     port: 8081
-    memoryLimit: "512M"
+    service:
+      type: ClusterIP
 
-  visitsService:
+  visits-service:
     enabled: true
-    image: springcommunity/spring-petclinic-visits-service
+    repository: spring-petclinic-visits-service
     port: 8082
-    memoryLimit: "512M"
+    service:
+      type: ClusterIP
 
-  vetsService:
+  vets-service:
     enabled: true
-    image: springcommunity/spring-petclinic-vets-service
+    repository: spring-petclinic-vets-service
     port: 8083
-    memoryLimit: "512M"
+    service:
+      type: ClusterIP
 
-  genaiService:
+  genai-service:
     enabled: true
-    image: springcommunity/spring-petclinic-genai-service
+    repository: spring-petclinic-genai-service
     port: 8084
-    memoryLimit: "512M"
     env:
       OPENAI_API_KEY: ""
       AZURE_OPENAI_KEY: ""
       AZURE_OPENAI_ENDPOINT: ""
+    service:
+      type: ClusterIP
 
-  apiGateway:
+  api-gateway:
     enabled: true
-    image: springcommunity/spring-petclinic-api-gateway
+    repository: spring-petclinic-api-gateway
     port: 8080
-    memoryLimit: "512M"
+    service:
+      type: ClusterIP
 
-  tracingServer:
+  admin-server:
     enabled: true
-    image: openzipkin/zipkin
-    port: 9411
-    memoryLimit: "512M"
-
-  adminServer:
-    enabled: true
-    image: springcommunity/spring-petclinic-admin-server
+    repository: spring-petclinic-admin-server
     port: 9090
-    memoryLimit: "512M"
+    service:
+      type: ClusterIP
 
-  grafanaServer:
+  tracing-server:
     enabled: true
-    image: grafana/grafana
-    port: 3030
-    memoryLimit: "256M"
+    image: docker.io/openzipkin/zipkin:latest
+    port: 9411
+    service:
+      type: ClusterIP
 
-  prometheusServer:
-    enabled: true
-    image: prom/prometheus
-    port: 9091
-    memoryLimit: "256M"
+  grafana-server:
+    enabled: false
+    image: docker.io/grafana/grafana:latest
+    port: 3000
+    service:
+      type: ClusterIP
+
+  prometheus-server:
+    enabled: false
+    image: docker.io/prom/prometheus:latest
+    port: 9090
+    service:
+      type: ClusterIP

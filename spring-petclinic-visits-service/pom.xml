@@ -15,8 +15,8 @@
     </parent>
 
     <properties>
-        <docker.exposed.port>8081</docker.exposed.port>
-        <docker.image.dockerfile.dir>${basedir}/../docker</docker.image.dockerfile.dir>
+        <docker.image.exposed.port>8082</docker.image.exposed.port>
+        <jib.skip>false</jib.skip>
     </properties>
 
     <dependencies>
@@ -111,17 +111,4 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>buildDocker</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

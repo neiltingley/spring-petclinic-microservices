@@ -32,24 +32,13 @@ You can tell Config Server to use your local Git repository by using `native` Sp
 
 ## Starting services locally with docker-compose
 In order to start entire infrastructure using Docker, you have to build images by executing
-``bash
-./mvnw clean install -P buildDocker
-``
-This requires `Docker` or `Docker desktop` to be installed and running.
-
-Alternatively you can also build all the images on `Podman`, which requires Podman or Podman Desktop to be installed and running.
 ```bash
-./mvnw clean install -PbuildDocker -Dcontainer.executable=podman
+./mvnw -DskipTests package jib:buildTar -Ddocker.image.prefix=springcommunity
 ```
-By default, the Docker OCI image is build for an `linux/amd64` platform.
-For other architectures, you could change it by using the `-Dcontainer.platform` maven command line argument.
-For instance, if you target container images for an Apple M2, you could use the command line with the `linux/arm64` architecture:
-```bash
-./mvnw clean install -P buildDocker -Dcontainer.platform="linux/arm64"
-```
+This uses Jib to produce OCI image tarballs without requiring a local Docker daemon.
 
 Once images are ready, you can start them with a single command
-`docker compose up` or `podman-compose up`. 
+`docker compose up`. 
 
 Containers startup order is coordinated with the `service_healthy` condition of the Docker Compose [depends-on](https://github.com/compose-spec/compose-spec/blob/main/spec.md#depends_on) expression 
 and the [healthcheck](https://github.com/compose-spec/compose-spec/blob/main/spec.md#healthcheck) of the service containers. 
@@ -244,13 +233,10 @@ For other Docker registries, provide the full URL to your repository, for exampl
 export REPOSITORY_PREFIX=harbor.myregistry.com/petclinic
 ```
 
-To push Docker image for the `linux/amd64` and the `linux/arm64` platform to your own registry, please use the command line:
+To push images to your own registry with Jib, use:
 ```bash
-mvn clean install -Dmaven.test.skip -P buildDocker -Ddocker.image.prefix=${REPOSITORY_PREFIX} -Dcontainer.build.extraarg="--push" -Dcontainer.platform="linux/amd64,linux/arm64"
+./mvnw -DskipTests -Ddocker.image.prefix=${REPOSITORY_PREFIX} -Djib.to.tags=latest jib:build
 ```
-
-The `scripts/pushImages.sh` and `scripts/tagImages.sh` shell scripts could also be used once you build your image with the `buildDocker` maven profile.
-The `scripts/tagImages.sh` requires to declare the `VERSION` env variable.
 
 ## Compiling the CSS
 

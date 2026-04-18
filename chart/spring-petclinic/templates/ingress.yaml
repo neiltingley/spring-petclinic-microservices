@@ -1,4 +1,4 @@
-{{- if .Values.ingress.enabled -}}
+{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -35,9 +35,9 @@ spec:
             {{- end }}
             backend:
               service:
-                name: {{ include "spring-petclinic.fullname" $ }}
+                name: {{ $.Values.ingress.serviceName }}
                 port:
-                  number: {{ $.Values.service.port }}
+                  number: {{ $.Values.ingress.servicePort }}
           {{- end }}
     {{- end }}
 {{- end }}

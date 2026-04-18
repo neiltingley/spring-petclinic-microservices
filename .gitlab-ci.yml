@@ -1,0 +1,108 @@
+# Required GitLab CI/CD variables:
+# - DOCKERHUB_USERNAME
+# - DOCKERHUB_TOKEN
+# Optional variables:
+# - DOCKERHUB_NAMESPACE (defaults to neiltingley)
+# - KUBE_NAMESPACE (defaults to petclinic)
+# - HELM_RELEASE_NAME (defaults to spring-petclinic)
+# - HELM_VALUES_FILE (defaults to chart/spring-petclinic/values.yaml)
+# - HELM_EXTRA_ARGS
+# - KUBE_CONTEXT
+
+stages:
+  - build
+  - test
+  - publish
+  - deploy
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  MAVEN_CLI_OPTS: "--batch-mode --errors --no-transfer-progress"
+  DOCKERHUB_NAMESPACE: "neiltingley"
+  IMAGE_TAGS: "$CI_COMMIT_SHORT_SHA"
+
+default:
+  interruptible: true
+
+cache:
+  key: "${CI_PROJECT_NAME}-maven"
+  paths:
+    - .m2/repository
+
+.maven_job: &maven_job
+  image: maven:3.9.9-eclipse-temurin-17
+  before_script:
+    - chmod +x mvnw
+
+build:
+  stage: build
+  <<: *maven_job
+  script:
+    - ./mvnw $MAVEN_CLI_OPTS -DskipTests package
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - spring-petclinic-*/target/*.jar
+
+test:
+  stage: test
+  <<: *maven_job
+  script:
+    - ./mvnw $MAVEN_CLI_OPTS test
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - spring-petclinic-*/target/surefire-reports/TEST-*.xml
+
+publish_dockerhub:
+  stage: publish
+  <<: *maven_job
+  needs:
+    - test
+  rules:
+    - if: '$DOCKERHUB_USERNAME && $DOCKERHUB_TOKEN && $CI_COMMIT_TAG'
+      variables:
+        IMAGE_TAGS: "$CI_COMMIT_SHORT_SHA,$CI_COMMIT_TAG"
+    - if: '$DOCKERHUB_USERNAME && $DOCKERHUB_TOKEN && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      variables:
+        IMAGE_TAGS: "$CI_COMMIT_SHORT_SHA,latest"
+  script:
+    - ./mvnw $MAVEN_CLI_OPTS -DskipTests -Ddocker.image.prefix="${DOCKERHUB_NAMESPACE:-neiltingley}" -Djib.to.auth.username="$DOCKERHUB_USERNAME" -Djib.to.auth.password="$DOCKERHUB_TOKEN" -Djib.to.tags="$IMAGE_TAGS" jib:build
+
+deploy_helm:
+  stage: deploy
+  image:
+    name: alpine/helm:3.17.3
+    entrypoint: [""]
+  needs:
+    - publish_dockerhub
+  rules:
+    - if: '$DOCKERHUB_USERNAME && $DOCKERHUB_TOKEN && $CI_COMMIT_TAG'
+    - if: '$DOCKERHUB_USERNAME && $DOCKERHUB_TOKEN && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  environment:
+    name: production
+  script:
+    - export DOCKERHUB_NAMESPACE="${DOCKERHUB_NAMESPACE:-neiltingley}"
+    - export KUBE_NAMESPACE="${KUBE_NAMESPACE:-petclinic}"
+    - export HELM_RELEASE_NAME="${HELM_RELEASE_NAME:-spring-petclinic}"
+    - export HELM_VALUES_FILE="${HELM_VALUES_FILE:-chart/spring-petclinic/values.yaml}"
+    - export IMAGE_TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
+    - |
+      set -eu
+
+      context_args=""
+      if [ -n "${KUBE_CONTEXT:-}" ]; then
+        context_args="--kube-context ${KUBE_CONTEXT}"
+      fi
+
+      helm upgrade --install "$HELM_RELEASE_NAME" chart/spring-petclinic \
+        --namespace "$KUBE_NAMESPACE" \
+        --create-namespace \
+        --wait \
+        --timeout 10m \
+        -f "$HELM_VALUES_FILE" \
+        --set-string global.imageNamespace="$DOCKERHUB_NAMESPACE" \
+        --set-string global.imageTag="$IMAGE_TAG" \
+        $context_args \
+        ${HELM_EXTRA_ARGS:-}

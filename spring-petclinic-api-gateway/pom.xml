@@ -23,8 +23,8 @@
         <squareup-okhttp3.version>5.0.0-alpha.14</squareup-okhttp3.version>
 
         <libsass-maven-plugin.version>0.2.29</libsass-maven-plugin.version>
-        <docker.image.exposed.port>8081</docker.image.exposed.port>
-        <docker.image.dockerfile.dir>${basedir}/../docker</docker.image.dockerfile.dir>
+        <docker.image.exposed.port>8080</docker.image.exposed.port>
+        <jib.skip>false</jib.skip>
     </properties>
 
     <dependencies>
@@ -166,17 +166,6 @@
     </dependencies>
 
     <profiles>
-        <profile>
-            <id>buildDocker</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>css</id>
             <build>

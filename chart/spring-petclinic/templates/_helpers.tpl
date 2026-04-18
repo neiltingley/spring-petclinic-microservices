@@ -51,12 +51,20 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Create the name of the service account to use
+Per-service labels
 */}}
-{{- define "spring-petclinic.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "spring-petclinic.fullname" .) .Values.serviceAccount.name }}
+{{- define "spring-petclinic.serviceLabels" -}}
+{{ include "spring-petclinic.labels" .root }}
+app.kubernetes.io/component: {{ .name }}
+{{- end }}
+
+{{/*
+Resolve the image for a service
+*/}}
+{{- define "spring-petclinic.image" -}}
+{{- if .service.image }}
+{{- .service.image }}
 {{- else }}
-{{- default "default" .Values.serviceAccount.name }}
+{{- printf "%s/%s/%s:%s" .root.Values.global.imageRegistry .root.Values.global.imageNamespace .service.repository .root.Values.global.imageTag }}
 {{- end }}
 {{- end }}

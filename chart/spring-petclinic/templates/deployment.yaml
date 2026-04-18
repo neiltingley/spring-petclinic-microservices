@@ -5,38 +5,62 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ $serviceName }}
-  namespace: {{ $.Release.Namespace }}
   labels:
-    app: {{ $serviceName }}
+    {{- include "spring-petclinic.serviceLabels" (dict "root" $ "name" $serviceName) | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ default $.Values.serviceDefaults.replicaCount $service.replicaCount }}
   selector:
     matchLabels:
-      app: {{ $serviceName }}
+      app.kubernetes.io/name: {{ include "spring-petclinic.name" $ }}
+      app.kubernetes.io/instance: {{ $.Release.Name }}
+      app.kubernetes.io/component: {{ $serviceName }}
   template:
     metadata:
       labels:
-        app: {{ $serviceName }}
+        {{- include "spring-petclinic.serviceLabels" (dict "root" $ "name" $serviceName) | nindent 8 }}
+      {{- with $.Values.global.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
+      {{- with $.Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: {{ $serviceName }}
-        image: {{ $service.image }}
+        image: {{ include "spring-petclinic.image" (dict "root" $ "service" $service) }}
+        imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
         ports:
-        - containerPort: {{ $service.port }}
+        - name: http
+          containerPort: {{ $service.port }}
+          protocol: TCP
+        {{- $resources := default $.Values.serviceDefaults.resources $service.resources }}
         resources:
-          limits:
-            memory: {{ $service.memoryLimit }}
-        {{- if $service.healthcheck }}
+          {{- toYaml $resources | nindent 10 }}
+        {{- $probes := default $.Values.serviceDefaults.probes $service.probes }}
+        {{- if $probes.enabled }}
+        readinessProbe:
+          tcpSocket:
+            port: http
+          initialDelaySeconds: {{ $probes.initialDelaySeconds }}
+          periodSeconds: {{ $probes.periodSeconds }}
+          timeoutSeconds: {{ $probes.timeoutSeconds }}
+          failureThreshold: {{ $probes.failureThreshold }}
         livenessProbe:
-          exec:
-            command: {{ $service.healthcheck.test }}
-          initialDelaySeconds: 15
-          periodSeconds: {{ $service.healthcheck.interval | default "10s" | trimSuffix "s" | int }}
-          timeoutSeconds: {{ $service.healthcheck.timeout | default "5s" | trimSuffix "s" | int }}
-          failureThreshold: {{ $service.healthcheck.retries | default 3 }}
+          tcpSocket:
+            port: http
+          initialDelaySeconds: {{ $probes.initialDelaySeconds }}
+          periodSeconds: {{ $probes.periodSeconds }}
+          timeoutSeconds: {{ $probes.timeoutSeconds }}
+          failureThreshold: {{ $probes.failureThreshold }}
         {{- end }}
-        {{- if $service.env }}
+        {{- if or $.Values.global.env $service.env }}
         env:
+        {{- range $key, $value := $.Values.global.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
         {{- range $key, $value := $service.env }}
         - name: {{ $key }}
           value: {{ $value | quote }}

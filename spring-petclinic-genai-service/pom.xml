@@ -15,8 +15,8 @@
 	</parent>
 
     <properties>
-        <docker.image.exposed.port>8081</docker.image.exposed.port>
-        <docker.image.dockerfile.dir>${basedir}/../docker</docker.image.dockerfile.dir>
+        <docker.image.exposed.port>8084</docker.image.exposed.port>
+        <jib.skip>false</jib.skip>
         <spring-ai.version>2.0.0-M1</spring-ai.version>
     </properties>
 
@@ -167,18 +167,4 @@
       </snapshots>
     </repository>
   </repositories>
-
-    <profiles>
-        <profile>
-            <id>buildDocker</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
